@@ -1,3 +1,12 @@
+# make -j					lib64/libhybrid.a
+# make -j interactive		bin/interactive
+# make -j reconstruction	bin/reconstruction_call
+# make -j examples			interactive + reconstruction
+# make -j tests				bin/tests
+# make -j all				all of the above
+# make clean				remove all above executables and their intermediate
+# 								object files
+
 NVCC = nvcc
 
 NVCCFLAGS = -std=c++11 -Iinclude -arch=sm_30
@@ -8,9 +17,9 @@ CUDA_LD_FLAGS = -L/usr/local/cuda/lib64 -lcuda -lcudart
 
 EXAMPLE_LD = -Llib64 -lhybrid -lm -fopenmp
 
-all: libhybrid examples tests
-
 libhybrid: lib64/libhybrid.a
+
+all: libhybrid tests examples
 
 lib64/libhybrid.a: \
 	build/utils.o build/sampling_funcs.o build/sampling_kernels.o
@@ -32,7 +41,11 @@ build/sampling_kernels.o: \
 	src/sampling_kernels.cu include/sampling_kernels.h include/utils.h
 	$(NVCC) $(NVCCFLAGS) -c -o build/sampling_kernels.o src/sampling_kernels.cu
 
-examples: bin/interactive bin/reconstruction_call
+examples: interactive reconstruction
+
+interactive: bin/interactive
+
+reconstruction: bin/reconstruction_call
 
 bin/interactive: build/interactive.o lib64/libhybrid.a
 	$(CXX) $(CXXFLAGS) -o bin/interactive build/interactive.o \
